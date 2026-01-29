@@ -37,7 +37,7 @@ if [ -z "${CKPT_PATH}" ]; then
   exit 1
 fi
 
-torchrun --standalone --nproc_per_node=${NPROC_PER_NODE} sample_ddp.py ODE \
+torchrun --standalone --nproc_per_node=${NPROC_PER_NODE} sample.py ODE \
   --model SiT-XS/1 \
   --image-size 32 \
   --num-classes 10 \
@@ -49,13 +49,3 @@ torchrun --standalone --nproc_per_node=${NPROC_PER_NODE} sample_ddp.py ODE \
   --sample-dir "${SAMPLE_DIR}" \
   --num-fid-samples ${NUM_FID_SAMPLES} \
   --per-proc-batch-size ${PER_PROC_BATCH_SIZE}
-
-# ---- FID ----
-REAL_DIR="data/cifar10_real_images"
-SAMPLE_FOLDER=$(ls -dt "${SAMPLE_DIR}"/* 2>/dev/null | head -n 1)
-if [ -z "${SAMPLE_FOLDER}" ]; then
-  echo "No sample folder found under ${SAMPLE_DIR}. Aborting FID."
-  exit 1
-fi
-
-python fid_folders.py "${REAL_DIR}" "${SAMPLE_FOLDER}"
