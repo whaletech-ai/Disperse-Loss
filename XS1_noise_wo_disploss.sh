@@ -13,6 +13,7 @@ python train.py \
   --epochs 80 \
   --prediction noise \
   --global-batch-size 32 \
+  --loss-weight likelihood \
   --global-seed 0 \
   --vae ema \
   --num-workers 4 \
