@@ -12,6 +12,7 @@ python train.py \
   --num-classes 10 \
   --epochs 80 \
   --prediction noise \
+  --loss-weight likelihood \
   --global-batch-size 32 \
   --global-seed 0 \
   --vae ema \
@@ -21,4 +22,5 @@ python train.py \
   --sample-every 5000 \
   --cfg-scale 4.0 \
   --wandb \
+
   
