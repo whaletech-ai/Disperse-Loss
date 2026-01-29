@@ -166,6 +166,7 @@ class Transport:
             else:
                 terms['loss'] = mean_flat(weight * ((model_output * sigma_t + x0) ** 2))
         terms['loss'] += 0.25*disp_loss 
+        terms['disp_loss']=0.25*disp_loss
         return terms
     
 
