@@ -3,7 +3,7 @@ import torchvision
 # from pathlib import Path
 # import ssl
 
-# # --- 解决 SSL 证书验证失败的问题 (CERTIFICATE_VERIFY_FAILED) ---
+# # --- 解决 SSL 证书验证失败的问题 (CERTIFICATE_VERIFY_FAILED)
 # try:
 #     _create_unverified_https_context = ssl._create_unverified_context
 # except AttributeError:
