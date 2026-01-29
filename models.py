@@ -388,10 +388,10 @@ def SiT_S_8(**kwargs):
         # num_classes=10,
         # learn_sigma=True,
 
-def SiT_S_S_1(**kwargs):
+def SiT_XS_1(**kwargs):
     return SiT(depth=12, hidden_size=384, patch_size=2, num_heads=6, **kwargs)
 
-def SiT_S_S_2(**kwargs):
+def SiT_XS_2(**kwargs):
     return SiT(depth=8, hidden_size=256, patch_size=2, num_heads=4, **kwargs)
 
 SiT_models = {
@@ -399,5 +399,5 @@ SiT_models = {
     'SiT-L/2':  SiT_L_2,   'SiT-L/4':  SiT_L_4,   'SiT-L/8':  SiT_L_8,
     'SiT-B/2':  SiT_B_2,   'SiT-B/4':  SiT_B_4,   'SiT-B/8':  SiT_B_8,
     'SiT-S/2':  SiT_S_2,   'SiT-S/4':  SiT_S_4,   'SiT-S/8':  SiT_S_8,
-    'SiT-S_S_1':  SiT_S_S_1,   'SiT-S_S_2':  SiT_S_S_2,
+    'SiT-XS/1':  SiT_XS_1,   'SiT-XS/2':  SiT_XS_2,
 }
