@@ -2,9 +2,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-"""
-A minimal training script for SiT using PyTorch DDP.
-"""
+
 import torch
 # the first flag below was False when we tested this script but True makes A100 training a lot faster:
 torch.backends.cuda.matmul.allow_tf32 = True
@@ -216,6 +214,7 @@ def main(args):
     train_steps = 0
     log_steps = 0
     running_loss = 0.0
+    running_disp_loss = 0.0
     start_time = time()
 
     # Labels to condition the model with (feel free to change):
@@ -234,6 +233,7 @@ def main(args):
             model_kwargs = dict(y=y, return_act=args.disp)
             loss_dict = transport.training_losses(model, x, model_kwargs)
             loss = loss_dict["loss"].mean()
+    
             opt.zero_grad()
             loss.backward()
             opt.step()
@@ -241,6 +241,9 @@ def main(args):
 
             # Log loss values:
             running_loss += loss.item()
+            
+            disp_loss=loss_dict['disp_loss'].item()
+            running_disp_loss+=disp_loss
             log_steps += 1
             train_steps += 1
 
@@ -249,13 +252,16 @@ def main(args):
                 end_time = time()
                 steps_per_sec = log_steps / (end_time - start_time)
                 avg_loss = running_loss / log_steps
-                logger.info(f"(step={train_steps:07d}) Train Loss: {avg_loss:.4f}, Train Steps/Sec: {steps_per_sec:.2f}")
+                avg_disp_loss=running_disp_loss/log_steps
+                logger.info(f"(step={train_steps:07d}) Train Loss: {avg_loss:.4f},Disp Loss:{avg_disp_loss:.4f}, Train Steps/Sec: {steps_per_sec:.2f}")
                 if args.wandb:
                     wandb_utils.log(
-                        {"train loss": avg_loss, "train steps/sec": steps_per_sec},
+                        {"train loss": avg_loss, "train steps/sec": steps_per_sec,
+                         'disp_loss':avg_disp_loss},
                         step=train_steps
                     )
                 running_loss = 0.0
+                running_disp_loss = 0.0
                 log_steps = 0
                 start_time = time()
 
@@ -316,7 +322,7 @@ if __name__ == "__main__":
     parser.add_argument("--data-path", type=str, required=True)
     parser.add_argument("--results-dir", type=str, default="results")
     parser.add_argument("--model", type=str, choices=list(SiT_models.keys()), default='SiT-XS/1')
-    parser.add_argument("--image-size", type=int, choices=[256, 512], default=256)
+    parser.add_argument("--image-size", type=int, choices=[32,256, 512], default=32)
     parser.add_argument("--num-classes", type=int, default=10)
     parser.add_argument("--epochs", type=int, default=80)
     parser.add_argument("--global-batch-size", type=int, default=32)
@@ -336,4 +342,5 @@ if __name__ == "__main__":
     parse_transport_args(parser)
     args = parser.parse_args()
     main(args)
+
 
