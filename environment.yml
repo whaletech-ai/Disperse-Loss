@@ -6,6 +6,7 @@ dependencies:
   - python >= 3.8
   - pytorch >= 1.13
   - torchvision
+  - pytorch_fid
   - pytorch-cuda >=11.7
   - pip
   - pip:
