@@ -146,8 +146,8 @@ def main(args):
     # -------------------------
     # Create model + EMA
     # -------------------------
-    assert args.image_size % 8 == 0, "Image size must be divisible by 8 (for the VAE encoder)."
-    latent_size = args.image_size // 8
+    assert args.image_size % 4 == 0, "Image size must be divisible by 8 (for the VAE encoder)."
+    latent_size = args.image_size // 4
     model = SiT_models[args.model](
         input_size=latent_size,
         num_classes=args.num_classes
@@ -232,6 +232,10 @@ def main(args):
         for x, y in loader:
             x = x.to(device)
             y = y.to(device)
+            
+            # print('='*30)
+            # print(x.shape)
+            
             # with torch.no_grad():
             #     # Map input images to latent space + normalize latents:
             #     # x = vae.encode(x).latent_dist.sample().mul_(0.18215)
@@ -248,7 +252,7 @@ def main(args):
             # Log loss values:
             running_loss += loss.item()
             
-            disp_loss=loss_dict['disp_loss'].item()
+            disp_loss=loss_dict['disp_loss']
             running_disp_loss+=disp_loss
             log_steps += 1
             train_steps += 1
