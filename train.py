@@ -30,7 +30,16 @@ from transport import create_transport, Sampler
 from pretrained_VAE import load_pretrain_vqvae
 from train_utils import parse_transport_args
 import wandb_utils
-from cifar10 import train_dataset, test_dataset
+# from cifar10 import train_dataset, test_dataset
+from cifar10 import DatasetImagesWithVAE
+# train_dataset = torch.load("train_dataset.pt")
+test_dataset = torch.load("test_dataset.pt",weights_only=False)
+train_dataset = torch.load(
+    "train_dataset.pt",
+    weights_only=False
+)
+
+
 
 #################################################################################
 #                             Training Helper Functions                         #
@@ -57,28 +66,25 @@ def requires_grad(model, flag=True):
         p.requires_grad = flag
 
 
-def cleanup():
-    """
-    End DDP training.
-    """
-    dist.destroy_process_group()
+# def cleanup():
+#     """
+#     End DDP training.
+#     """
+#     dist.destroy_process_group()
 
 
 def create_logger(logging_dir):
     """
     Create a logger that writes to a log file and stdout.
     """
-    if dist.get_rank() == 0:  # real logger
-        logging.basicConfig(
-            level=logging.INFO,
-            format='[\033[34m%(asctime)s\033[0m] %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S',
-            handlers=[logging.StreamHandler(), logging.FileHandler(f"{logging_dir}/log.txt")]
-        )
-        logger = logging.getLogger(__name__)
-    else:  # dummy logger (does nothing)
-        logger = logging.getLogger(__name__)
-        logger.addHandler(logging.NullHandler())
+    # if dist.get_rank() == 0:  # real logger
+    logging.basicConfig(
+        level=logging.INFO,
+        format='[\033[34m%(asctime)s\033[0m] %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        handlers=[logging.StreamHandler(), logging.FileHandler(f"{logging_dir}/log.txt")]
+    )
+    logger = logging.getLogger(__name__)
     return logger
 
 
@@ -184,7 +190,7 @@ def main(args):
     transport_sampler = Sampler(transport)
 
     # vae = AutoencoderKL.from_pretrained(f"stabilityai/sd-vae-ft-{args.vae}").to(device)
-    vae = load_pretrain_vqvae()
+    vae = load_pretrain_vqvae().to(device)
     logger.info(f"SiT Parameters: {sum(p.numel() for p in model.parameters()):,}")
 
     # -------------------------
@@ -226,10 +232,10 @@ def main(args):
         for x, y in loader:
             x = x.to(device)
             y = y.to(device)
-            with torch.no_grad():
-                # Map input images to latent space + normalize latents:
-                # x = vae.encode(x).latent_dist.sample().mul_(0.18215)
-                x = vae.encode(x)
+            # with torch.no_grad():
+            #     # Map input images to latent space + normalize latents:
+            #     # x = vae.encode(x).latent_dist.sample().mul_(0.18215)
+            #     x = vae.encode(x)
             model_kwargs = dict(y=y, return_act=args.disp)
             loss_dict = transport.training_losses(model, x, model_kwargs)
             loss = loss_dict["loss"].mean()
@@ -312,7 +318,7 @@ def main(args):
 
     model.eval()  # disable randomized embedding dropout for final eval
     logger.info("Done!")
-    cleanup()
+    # cleanup()
 
 
 

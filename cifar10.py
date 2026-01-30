@@ -1,6 +1,8 @@
 import torch
 import torchvision
-# from pathlib import Path
+from pathlib import Path
+from itertools import islice
+
 # import ssl
 
 # # --- 解决 SSL 证书验证失败的问题 (CERTIFICATE_VERIFY_FAILED)
@@ -18,9 +20,21 @@ from typing import Any
 import numpy as np
 import torch
 
-from torchsmith.models.external._vae import VAE
-from torchsmith.utils.pyutils import batched
+# from torchsmith.models.external._vae import VAE
+# from torchsmith.utils.pyutils import batched
 
+import sys
+def batched(iterable, n):
+    if sys.version_info >= (3, 12):
+        from itertools import batched as itertools_batched
+
+        yield from itertools_batched(iterable, n)
+    else:
+        if n < 1:
+            raise ValueError("n must be at least one")
+        it = iter(iterable)
+        while batch := tuple(islice(it, n)):
+            yield batch
 
 class DatasetImagesWithVAE(torch.utils.data.Dataset):
     def __init__(
@@ -29,7 +43,7 @@ class DatasetImagesWithVAE(torch.utils.data.Dataset):
         *,
         labels: np.ndarray,
         scale_factor: float,
-        vae: VAE,
+        vae,
         mean: float = 0.5,
         std: float = 0.5,
         batch_size: int = 1000,
@@ -49,62 +63,71 @@ class DatasetImagesWithVAE(torch.utils.data.Dataset):
 
 
 # 定义路径
-DATA_DIR = Path("./data")  # 你可以修改为你想要的路径
-DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-print("开始下载/加载训练集...")
-train_dset = torchvision.datasets.CIFAR10(
-    root=DATA_DIR / "cifar_dataset",
-    transform=torchvision.transforms.ToTensor(),
-    download=True,  # 如果本地没有，会自动下载
-    train=True,
-)
+# DATA_DIR = Path("./data")  # 你可以修改为你想要的路径
+# DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-print("开始下载/加载测试集...")
-test_dset = torchvision.datasets.CIFAR10(
-    root=DATA_DIR / "cifar_dataset",
-    transform=torchvision.transforms.ToTensor(),
-    download=True,
-    train=False,
-)
+# print("开始下载/加载训练集...")
+# train_dset = torchvision.datasets.CIFAR10(
+#     root=DATA_DIR / "cifar_dataset",
+#     transform=torchvision.transforms.ToTensor(),
+#     download=True,  # 如果本地没有，会自动下载
+#     train=True,
+# )
 
-print(f"下载完成! 训练集大小: {len(train_dset)}, 测试集大小: {len(test_dset)}")
+# print("开始下载/加载测试集...")
+# test_dset = torchvision.datasets.CIFAR10(
+#     root=DATA_DIR / "cifar_dataset",
+#     transform=torchvision.transforms.ToTensor(),
+#     download=True,
+#     train=False,
+# )
 
-train_images = train_dset.data / 255.0
-train_labels = np.array(train_dset.targets, dtype=np.int32)
-test_images = test_dset.data / 255.0
-test_labels = np.array(test_dset.targets, dtype=np.int32)
+# print(f"下载完成! 训练集大小: {len(train_dset)}, 测试集大小: {len(test_dset)}")
 
-train_data = train_images.transpose((0, 3, 1, 2))
-test_data = test_images.transpose((0, 3, 1, 2))
+# from pretrained_VAE import load_pretrain_vqvae
+# vae = load_pretrain_vqvae()
+# train_images = train_dset.data / 255.0
+# train_labels = np.array(train_dset.targets, dtype=np.int32)
+# test_images = test_dset.data / 255.0
+# test_labels = np.array(test_dset.targets, dtype=np.int32)
 
-mean, std = 0.5, 0.5
-autoencoded_images = (
-    vae.encode(
-        (train_data[:1000] - mean) / std  # (B, C, H, W)
-    )
-    .cpu()
-    .numpy()
-)
-scale_factor = float(np.std(autoencoded_images))  # 1.2963932
-print(f"Using mean, std: {mean} {std} and scale factor: {scale_factor}")
+# train_data = train_images.transpose((0, 3, 1, 2))
+# test_data = test_images.transpose((0, 3, 1, 2))
+
+# mean, std = 0.5, 0.5
+# autoencoded_images = (
+#     vae.encode(
+#         (train_data[:1000] - mean) / std  # (B, C, H, W)
+#     )
+#     .cpu()
+#     .numpy()
+# )
+# scale_factor = float(np.std(autoencoded_images))  # 1.2963932
+# print(f"Using mean, std: {mean} {std} and scale factor: {scale_factor}")
 
 
 
-train_dataset = DatasetImagesWithVAE(
-    data=train_data,
-    labels=train_labels,
-    mean=mean,
-    std=std,
-    vae=vae,
-    scale_factor=scale_factor,
-)
-test_dataset = DatasetImagesWithVAE(
-    data=test_data,
-    labels=test_labels,
-    mean=mean,
-    std=std,
-    vae=vae,
-    scale_factor=scale_factor,
-)
+# train_dataset = DatasetImagesWithVAE(
+#     data=train_data,
+#     labels=train_labels,
+#     mean=mean,
+#     std=std,
+#     vae=vae,
+#     scale_factor=scale_factor,
+# )
+# test_dataset = DatasetImagesWithVAE(
+#     data=test_data,
+#     labels=test_labels,
+#     mean=mean,
+#     std=std,
+#     vae=vae,
+#     scale_factor=scale_factor,
+# )
+
+# import torch
+# torch.save(train_dataset, "train_dataset.pt")
+# torch.save(test_dataset, "test_dataset.pt")
+
+
 
