@@ -10,7 +10,7 @@ import math
 
 
 def is_main_process():
-    return dist.get_rank() == 0
+    return True
 
 def namespace_to_dict(namespace):
     return {
